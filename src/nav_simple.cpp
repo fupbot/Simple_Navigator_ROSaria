@@ -1,14 +1,28 @@
+/*Code for simple navigation of Pioneer 3DX robot in MobileSim simulation.
+Robot smoves forward, senses two frontal sonars and turns right 90 deg if there's an obstacle.
+Master's degree course of Mobile Robotis @ UFRGS, Brazil.
+Author: fupbot (github)
+Date: July, 2022
+*/
+
 #include<ros/ros.h>
 #include<geometry_msgs/Twist.h>
 #include<sensor_msgs/PointCloud.h>
-#include<iomanip> // for std :: setprecision and std :: fixed
 
+//Global variables for sonar readings
+float x_left = 0.0;
+float y_left = 0.0;
+float x_right = 0.0;
+float y_right = 0.0;
 
-/* checks pose messages and outputs them to user */
+//gets readings from two frontal sonars and writes them to global variables
 void sonar_rec(const sensor_msgs::PointCloud& son) 
 {
-	//std::cout << std::setprecision(2) << std::fixed << "Sonar: " << son.points;
-  ROS_INFO_STREAM(son.points[0]);
+  x_left = son.points[3].x;
+  y_left = son.points[3].y;
+
+  x_right = son.points[4].x;
+  y_right = son.points[4].y;
 }
 
 int main(int argc, char **argv)
@@ -22,14 +36,13 @@ int main(int argc, char **argv)
   ros::Subscriber sub = nh.subscribe("RosAria/sonar", 1000, sonar_rec);
   sensor_msgs::PointCloud sonar;
 
-  double BASE_SPEED = 0.2, MOVE_TIME = 3.0, CLOCK_SPEED = 0.5,  PI = 3.14159;
+  ROS_INFO_STREAM("AQUI");
+
+  double BASE_SPEED = 0.2, MOVE_TIME = 3.0, CLOCK_SPEED = 0.5, PI = 3.14159;
   int count = 0;
   ros::Rate rate(CLOCK_SPEED);
 
-  //leitura do sonar
-  //sonar = nh.subscribe("sensor_msgs/PointCloud", 1000, &sonar_rec);
-
-  // Make the robot stop (robot perhaps has a speed already)
+  // Make the robot stop at the beggining of simulation
   msg.linear.x = 0;
   msg.linear.y = 0;
   msg.linear.z = 0;
@@ -38,39 +51,47 @@ int main(int argc, char **argv)
   msg.angular.z = 0;
   pub.publish(msg);
 
-  //while(ros::ok() && count<MOVE_TIME/CLOCK_SPEED + 1)
+//main loop
   while(ros::ok())
     {
-      //leitura do sonar
-      //sonar = nh.subscribe("sensor_msgs/PointCloud", 1000, &sonar_rec);
-      // sonar = sub.subscribe(sonar);
-      // ROS_INFO_STREAM(sonar);
-	    msg.linear.x = BASE_SPEED;
-      msg.angular.z = -1 * PI/ int(MOVE_TIME/CLOCK_SPEED) / 4;
-	    pub.publish(msg);
-      ROS_INFO_STREAM("O robo esta navegando sozinho!");
-      //count++;
-      ros::spinOnce();
-      rate.sleep();
+      if (x_left > 1.0 && x_right > 1.0){        //move forward - no obstacle within 1m
+        msg.linear.x = BASE_SPEED;
+        msg.linear.y = 0;
+        msg.linear.z = 0;
+        msg.angular.x = 0;
+        msg.angular.y = 0;
+        msg.angular.z = 0;
+	      pub.publish(msg);
+        ROS_INFO_STREAM("Moving forward at 0.2 m/s");
+      
+        ros::spinOnce();
+        //rate.sleep();
+      } 
+      else if (x_left < 1.0){   //turn right 90 deg
+        msg.angular.z = - PI / 2;
+        msg.linear.x = 0;
+        msg.linear.y = 0;
+        msg.linear.z = 0;
+        msg.angular.x = 0;
+        msg.angular.y = 0;
+	      pub.publish(msg);
+        ROS_INFO_STREAM("Oh no, obstacle detected! Turning right!");
+      
+        ros::spinOnce();
+        rate.sleep();
+      }
+      else{                                     //turn left 90 deg
+        msg.angular.z = PI / 2;
+        msg.linear.x = 0;
+        msg.linear.y = 0;
+        msg.linear.z = 0;
+        msg.angular.x = 0;
+        msg.angular.y = 0;
+	      pub.publish(msg);
+        ROS_INFO_STREAM("Oh no, obstacle detected! Turning left!");
+      
+        ros::spinOnce();
+        rate.sleep();
+      }
    }
-  
-  // make the robot stop
-  // for (int i = 0; i < 2; i++)
-  //   {  
-
-  //     msg.linear.x = 0;
-  //     msg.linear.y = 0;
-  //     msg.linear.z = 0;
-  //     pub.publish(msg);
-
-  //   }
-  //   ROS_INFO_STREAM("O robo parou.");
-    
-    // Guard, make sure the robot stops.
-    // rate.sleep();
-    // msg.linear.x = 0;
-    // msg.linear.y = 0;
-    // msg.linear.z = 0;
-    // pub.publish(msg); 
-
 }
