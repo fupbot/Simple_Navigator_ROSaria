@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   msg.angular.y = 0;
   msg.angular.z = 0;
   pub.publish(msg);
-
+//
 //main loop
   while(ros::ok())
     {
@@ -62,13 +62,13 @@ int main(int argc, char **argv)
         msg.angular.y = 0;
         msg.angular.z = 0;
 	      pub.publish(msg);
-        ROS_INFO_STREAM("Moving forward at 0.2 m/s");
+        //ROS_INFO_STREAM("Moving forward at 0.2 m/s");
       
         ros::spinOnce();
         //rate.sleep();
       } 
-      else if (x_left < 1.0){   //turn right 90 deg
-        msg.angular.z = - PI / 2;
+      else if (x_left < 1.0){   //turn right 45 deg
+        msg.angular.z = - PI / 4;
         msg.linear.x = 0;
         msg.linear.y = 0;
         msg.linear.z = 0;
@@ -80,8 +80,8 @@ int main(int argc, char **argv)
         ros::spinOnce();
         rate.sleep();
       }
-      else{                                     //turn left 90 deg
-        msg.angular.z = PI / 2;
+      else{                                     //turn left 45 deg
+        msg.angular.z = PI / 4;
         msg.linear.x = 0;
         msg.linear.y = 0;
         msg.linear.z = 0;
