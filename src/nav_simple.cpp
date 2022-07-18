@@ -30,15 +30,19 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "nav_simple");
   ros::NodeHandle nh;
   
-  ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("RosAria/cmd_vel", 1000);
+  //publisher para simulacao
+  //ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("RosAria/cmd_vel", 1000);
+  ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/rosaria_phi/cmd_vel", 1000);
   geometry_msgs::Twist msg;
 
-  ros::Subscriber sub = nh.subscribe("RosAria/sonar", 1000, sonar_rec);
+  //publisher para robo real
+  //ros::Subscriber sub = nh.subscribe("RosAria/sonar", 1000, sonar_rec);
+  ros::Subscriber sub = nh.subscribe("/rosaria_phi/sonar", 1000, sonar_rec);
   sensor_msgs::PointCloud sonar;
 
   ROS_INFO_STREAM("AQUI");
 
-  double BASE_SPEED = 0.2, MOVE_TIME = 3.0, CLOCK_SPEED = 0.5, PI = 3.14159;
+  double BASE_SPEED = 0.1, MOVE_TIME = 3.0, CLOCK_SPEED = 10.0, PI = 3.14159;
   int count = 0;
   ros::Rate rate(CLOCK_SPEED);
 
@@ -51,6 +55,7 @@ int main(int argc, char **argv)
   msg.angular.z = 0;
   pub.publish(msg);
 //
+
 //main loop
   while(ros::ok())
     {
@@ -65,7 +70,7 @@ int main(int argc, char **argv)
         //ROS_INFO_STREAM("Moving forward at 0.2 m/s");
       
         ros::spinOnce();
-        //rate.sleep();
+        rate.sleep();
       } 
       else if (x_left < 1.0){   //turn right 45 deg
         msg.angular.z = - PI / 4;
