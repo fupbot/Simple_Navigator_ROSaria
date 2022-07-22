@@ -5,9 +5,11 @@ Author: fupbot (github)
 Date: July, 2022
 */
 
-#include<ros/ros.h>
-#include<geometry_msgs/Twist.h>
-#include<sensor_msgs/PointCloud.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <sensor_msgs/PointCloud.h>
+#include <nav_msgs/Odometry.h>
+#include <iomanip> 
 
 //Global variables for sonar readings
 float x_left = 0.0;
@@ -25,14 +27,28 @@ void sonar_rec(const sensor_msgs::PointCloud& son)
   y_right = son.points[4].y;
 }
 
+//checks pose messages and outputs them to user 
+void poseMessageReceived(const nav_msgs::Odometry& msg) 
+{
+	std::cout << std::setprecision(2) << std::fixed << /* output the pose information using standard output */
+	  "Current position=(" << msg.pose.pose.position.x << ", " << msg.pose.pose.position.y << ") " << 
+	  "Current direction=" << std::setprecision(2) << std::fixed << msg.pose.pose.orientation.w<<"\r";
+	std::flush(std::cout);
+}
+
+
+//main
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "nav_simple");
   ros::NodeHandle nh;
   
+  //publishers
   ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("RosAria/cmd_vel", 1000);
   geometry_msgs::Twist msg;
 
+  //subscribers
+  ros::Subscriber pose = nh.subscribe("RosAria/pose", 1000, &poseMessageReceived);
   ros::Subscriber sub = nh.subscribe("RosAria/sonar", 1000, sonar_rec);
   sensor_msgs::PointCloud sonar;
 
